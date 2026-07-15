@@ -1,0 +1,30 @@
+%YAML:1.0
+BreakCornerDis: 1
+DistanceFaraway: 100
+Feature_Mode: 0
+FlatThreshold: !!python/object/apply:numpy.core.multiarray.scalar
+- !!python/object/apply:numpy.dtype
+  args:
+  - f8
+  - false
+  - true
+  state: !!python/tuple
+  - 3
+  - <
+  - null
+  - null
+  - null
+  - -1
+  - -1
+  - 0
+- !!binary |
+  ehSuR+F6tD8=
+KdTreeCornerOutlierDis: 0.05
+LidarNearestDis: 0.3
+Lidar_Type: 0
+NumCurvSize: 2
+NumFlat: 6
+PartNum: 150
+Use_seg: 1
+Used_Line: 6
+map_skip_frame: 2

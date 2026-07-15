@@ -1,0 +1,94 @@
+# =========================================
+# Datasets e dados brutos (NUNCA versionar)
+# =========================================
+*.bag
+*.bag.active
+*.db3
+data/
+datasets/
+rosbags/
+
+# =========================================
+# ROS / Catkin / Colcon
+# =========================================
+build/
+devel/
+devel_isolated/
+install/
+install_isolated/
+logs/
+log/
+.catkin_workspace
+*.pyc
+CMakeCache.txt
+CMakeFiles/
+
+# =========================================
+# Optuna / resultados de otimização
+# =========================================
+*.db
+optuna_studies/
+*.sqlite3
+trials/
+runs/
+wandb/
+mlruns/
+
+# =========================================
+# Python
+# =========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+.venv/
+venv/
+env/
+.ipynb_checkpoints/
+*.egg
+
+# =========================================
+# Evo / trajetórias e resultados temporários
+# =========================================
+*.tum
+*.kitti
+evo_results/
+tmp/
+temp/
+
+# =========================================
+# LaTeX (arquivos auxiliares de compilação)
+# =========================================
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.nav
+*.snm
+*.vrb
+*.xdv
+
+# =========================================
+# Sistema operacional e editores
+# =========================================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*~
+
+# =========================================
+# Outputs pesados (mantenha apenas o PDF final se quiser versionar)
+# =========================================
+figs_raw/
+*.mp4
+*.avi

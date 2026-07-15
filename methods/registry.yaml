@@ -1,0 +1,80 @@
+fast_lio:
+  package: fast_lio
+  launch_file: mapping_ouster128.launch
+  config_type: yaml_runtime
+  config_master: configs/fast_lio/ouster128.yaml
+  config_target: src/FAST_LIO/config/ouster128.yaml
+  odom_topic: /Odometry
+  lidar_topic_needed: /os_cloud_node/points
+  time_offset: 1644348493.629311
+  tunable_params:
+    - blind
+    - max_iteration
+    - filter_size_surf
+    - filter_size_map
+    - point_filter_num
+  baseline:
+    blind: 0.5
+    max_iteration: 3
+    filter_size_surf: 0.5
+    filter_size_map: 0.5
+    point_filter_num: 3
+  search_space:
+    blind: [0.1, 1.0]
+    max_iteration: [1, 6]
+    filter_size_surf: [0.1, 1.0]
+    filter_size_map: [0.1, 1.0]
+    point_filter_num: [1, 6]
+  min_matched_poses: 600
+
+lio_livox:
+  package: lio_livox
+  launch_file: horizon.launch
+  config_type: yaml_runtime
+  config_master: configs/lio_livox/horizon.yaml
+  config_target: src/LIO-Livox/config/horizon_config.yaml
+  odom_topic: /livox_odometry_mapped
+  lidar_topic_needed: /livox/lidar
+  time_offset: 1644348482.598945
+  tunable_params:
+    - LidarNearestDis
+    - FlatThreshold
+    - NumFlat
+    - KdTreeCornerOutlierDis
+  baseline:
+    LidarNearestDis: 1.0
+    FlatThreshold: 0.02
+    NumFlat: 3
+    KdTreeCornerOutlierDis: 0.2
+  search_space:
+    LidarNearestDis: [0.3, 2.0]
+    FlatThreshold: [0.005, 0.08]
+    NumFlat: [1, 6]
+    KdTreeCornerOutlierDis: [0.05, 0.5]
+  min_matched_poses: 600
+
+lego_loam:
+  package: lego_loam
+  launch_file: run.launch
+  config_type: cpp_compile_time   # PRECISA recompilar a cada trial!
+  config_master: configs/lego_loam/velodyne16_utility.h
+  config_target: src/LeGO-LOAM/LeGO-LOAM/include/utility.h
+  odom_topic: /aft_mapped_to_init
+  lidar_topic_needed: /velodyne_points
+  time_offset: -0.226
+  tunable_params:
+    - groundScanInd
+    - edgeThreshold
+    - surfThreshold
+    - nearestFeatureSearchSqDist
+  baseline:
+    groundScanInd: 7
+    edgeThreshold: 0.1
+    surfThreshold: 0.1
+    nearestFeatureSearchSqDist: 25
+  search_space:
+    groundScanInd: [3, 12]
+    edgeThreshold: [0.02, 0.3]
+    surfThreshold: [0.02, 0.3]
+    nearestFeatureSearchSqDist: [5, 50]
+  min_matched_poses: 100 

@@ -1,0 +1,14 @@
+%YAML:1.0
+Lidar_Type: 0
+Used_Line: 6
+Feature_Mode: 0
+NumCurvSize: 2
+DistanceFaraway: 100
+NumFlat: 2
+PartNum: 150
+FlatThreshold: 0.060712441775174424
+BreakCornerDis: 1
+LidarNearestDis: 0.9257057374208194
+KdTreeCornerOutlierDis: 0.18387693862725746
+Use_seg: 1
+map_skip_frame: 2
