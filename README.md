@@ -100,4 +100,4 @@ Lucas Froes Belinassi
 
 ## Licença
 
-[Defina aqui a licença do projeto — ex: MIT, ou "uso acadêmico".]
+uso acadêmico
