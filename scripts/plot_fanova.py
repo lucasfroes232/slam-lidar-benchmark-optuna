@@ -1,65 +1,83 @@
+#!/usr/bin/env python3
+"""
+plot_fanova.py
+
+Gera o gráfico de importância de hiperparâmetros (fANOVA) para um
+método/sensor/dataset/sampler específico, a partir do estudo Optuna
+persistido em SQLite. Exporta como HTML (contorna a falta de display
+gráfico no container).
+
+Uso:
+    python3 plot_fanova.py --method lio_livox --sensor horizon --dataset forest02_straight --sampler cmaes
+    python3 plot_fanova.py --method fast_lio --sensor ouster128 --dataset forest02_straight --sampler tpe
+"""
+
+import os
+import argparse
 import optuna
 import optuna.visualization as vis
-import os
 
-# =====================================================================
-# 1. ESCOLHA QUAL BANCO DE DADOS ANALISAR
-# (Descomente a linha do método que quer gerar agora)
-# =====================================================================
 
-# Para o FAST-LIO:
-#db_path = os.path.expanduser("~/results/fast_lio/ouster128/forest02_straight/study_cmaes.db")
-#nome_saida = "importancia_fanova_fast_lio.html"
+def main():
+    parser = argparse.ArgumentParser(
+        description="Gráfico fANOVA de importância de hiperparâmetros."
+    )
+    parser.add_argument("--method", required=True,
+                         help="Nome do método (ex: fast_lio, lio_livox, lego_loam)")
+    parser.add_argument("--sensor", required=True,
+                         help="Nome da pasta de config/sensor (ex: ouster128, horizon, velodyne16_utility)")
+    parser.add_argument("--dataset", required=True,
+                         help="Nome do dataset (ex: forest02_straight)")
+    parser.add_argument("--sampler", required=True, choices=["tpe", "cmaes", "gp"],
+                         help="Sampler cujo estudo será analisado")
+    parser.add_argument("--results-dir", default=os.path.expanduser("~/results"),
+                         help="Diretório raiz de resultados (default: ~/results)")
+    parser.add_argument("--out", default=None,
+                         help="Caminho de saída do HTML (default: ~/results/fanova/{dataset}/importancia_fanova_{method}_{sampler}.html)")
+    args = parser.parse_args()
 
-# Para o LIO-Livox (descomente as duas linhas abaixo para usar):
-db_path = os.path.expanduser("~/results/lio_livox/horizon/forest02_straight/study_cmaes.db")
-nome_saida = "importancia_fanova_lio_livox.html"
+    db_path = os.path.join(args.results_dir, args.method, args.sensor, args.dataset,
+                            f"study_{args.sampler}.db")
 
-# =====================================================================
-# 2. CONEXÃO COM O BANCO DE DADOS
-# =====================================================================
-if not os.path.exists(db_path):
-    print(f"[ERRO] Banco de dados não encontrado em: {db_path}")
-    exit()
+    if not os.path.exists(db_path):
+        print(f"[ERRO] Banco de dados não encontrado em: {db_path}")
+        return
 
-storage_url = f"sqlite:///{db_path}"
+    storage_url = f"sqlite:///{db_path}"
 
-# O Optuna exige o nome do estudo para carregá-lo. 
-# Como as vezes esquecemos qual nome demos no optuna.create_study(), 
-# este comando vasculha o banco e pega o nome automaticamente:
-estudos_salvos = optuna.get_all_study_summaries(storage=storage_url)
+    estudos_salvos = optuna.get_all_study_summaries(storage=storage_url)
+    if not estudos_salvos:
+        print("[ERRO] O banco de dados foi encontrado, mas está vazio.")
+        return
 
-if not estudos_salvos:
-    print("[ERRO] O banco de dados foi encontrado, mas está vazio.")
-    exit()
+    nome_do_estudo = estudos_salvos[0].study_name
+    print(f"Carregando histórico do estudo: '{nome_do_estudo}'...")
 
-nome_do_estudo = estudos_salvos[0].study_name
-print(f"Carregando histórico do estudo: '{nome_do_estudo}'...")
+    study = optuna.load_study(study_name=nome_do_estudo, storage=storage_url)
 
-# =====================================================================
-# 3. GERAÇÃO DO GRÁFICO (fANOVA)
-# =====================================================================
-study = optuna.load_study(study_name=nome_do_estudo, storage=storage_url)
+    fig = vis.plot_param_importances(study)
+    fig.update_layout(
+        title=f"Importância de Hiperparâmetros (fANOVA) — {args.method} / {args.sampler.upper()}",
+        title_x=0.5,
+        font=dict(size=14)
+    )
 
-# A função plot_param_importances usa fANOVA por padrão
-fig = vis.plot_param_importances(study)
+    if args.out:
+        caminho_final = os.path.expanduser(args.out)
+    else:
+        out_dir = os.path.join(args.results_dir, "fanova", args.dataset)
+        os.makedirs(out_dir, exist_ok=True)
+        caminho_final = os.path.join(out_dir, f"importancia_fanova_{args.method}_{args.sampler}.html")
 
-# Customizando o título para ficar com cara de artigo/apresentação
-fig.update_layout(
-    title=f"Importância de Hiperparâmetros (fANOVA) ",
-    title_x=0.5,
-    font=dict(size=14)
-)
+    os.makedirs(os.path.dirname(caminho_final), exist_ok=True)
+    fig.write_html(caminho_final)
 
-# =====================================================================
-# 4. EXPORTAÇÃO
-# Exportamos como HTML para contornar a falta de interface do Docker
-# =====================================================================
-caminho_final = os.path.expanduser(f"~/results/{nome_saida}")
-fig.write_html(caminho_final)
+    print("=" * 60)
+    print(f"Sucesso! Gráfico salvo em: {caminho_final}")
+    print("Vá no explorador de arquivos do VS Code, clique com o botão direito")
+    print(f"no arquivo e abra no seu navegador!")
+    print("=" * 60)
 
-print("="*60)
-print(f"Sucesso! Gráfico salvo em: {caminho_final}")
-print("Vá no explorador de arquivos do VS Code, clique com o botão direito")
-print(f"no arquivo '{nome_saida}' e abra no seu navegador!")
-print("="*60)
+
+if __name__ == "__main__":
+    main()

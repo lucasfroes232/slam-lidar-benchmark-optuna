@@ -1,56 +1,27 @@
 {
-  "started_at": "2026-07-15T01:08:09.061050",
-  "last_updated": "2026-07-15T14:03:05.195177",
-  "completed": 6,
-  "total": 9,
+  "started_at": "2026-07-28T00:33:17.231851",
+  "last_updated": "2026-07-28T10:55:47.316101",
+  "dataset": "forest01_square",
+  "completed": 2,
+  "total": 2,
   "results": [
     {
-      "method": "fast_lio",
-      "sampler": "tpe",
-      "status": "success",
-      "exit_code": 0,
-      "duration_seconds": 10212.5,
-      "log_file": "/root/results/_logs/fast_lio_tpe.log"
-    },
-    {
-      "method": "fast_lio",
+      "method": "loam_livox",
       "sampler": "cmaes",
+      "dataset": "forest01_square",
       "status": "success",
       "exit_code": 0,
-      "duration_seconds": 9396.2,
-      "log_file": "/root/results/_logs/fast_lio_cmaes.log"
+      "duration_seconds": 18528.6,
+      "log_file": "/root/results/_logs/loam_livox_cmaes.log"
     },
     {
-      "method": "fast_lio",
+      "method": "loam_livox",
       "sampler": "gp",
+      "dataset": "forest01_square",
       "status": "success",
       "exit_code": 0,
-      "duration_seconds": 9787.4,
-      "log_file": "/root/results/_logs/fast_lio_gp.log"
-    },
-    {
-      "method": "lio_livox",
-      "sampler": "tpe",
-      "status": "success",
-      "exit_code": 0,
-      "duration_seconds": 8113.5,
-      "log_file": "/root/results/_logs/lio_livox_tpe.log"
-    },
-    {
-      "method": "lio_livox",
-      "sampler": "cmaes",
-      "status": "success",
-      "exit_code": 0,
-      "duration_seconds": 7296.5,
-      "log_file": "/root/results/_logs/lio_livox_cmaes.log"
-    },
-    {
-      "method": "lio_livox",
-      "sampler": "gp",
-      "status": "failed",
-      "exit_code": 1,
-      "duration_seconds": 1688.8,
-      "log_file": "/root/results/_logs/lio_livox_gp.log"
+      "duration_seconds": 18821.3,
+      "log_file": "/root/results/_logs/loam_livox_gp.log"
     }
   ]
 }

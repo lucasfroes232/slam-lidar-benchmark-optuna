@@ -3,20 +3,27 @@ import json
 import argparse
 from evo.tools import file_interface
 from evo.core import sync, metrics
+import numpy as np
 
-def evaluate(gt_path, est_path, offset=None, save_plot=None, max_diff=0.05):
+def evaluate(gt_path, est_path, offset=None, save_plot=None, max_diff=0.1, skip_seconds=0.0):
     traj_ref = file_interface.read_tum_trajectory_file(gt_path)
     traj_est = file_interface.read_tum_trajectory_file(est_path)
 
-    # Se você NÃO passar o offset, ele avisa e usa o dinâmico (como backup)
+    # 1. Calcula o offset PRIMEIRO (para alinhar T=0 com T=0 antes de cortar)
     if offset is None:
         offset = traj_ref.timestamps[0] - traj_est.timestamps[0]
         print(f"Aviso: Offset não fornecido. Usando cálculo dinâmico: {offset:.3f} s")
     else:
-        print(f"Usando o offset informado via terminal: {offset:.3f} s")
+        print(f"Usando o offset informado: {offset:.3f} s")
 
-    # Aplica o offset
+    # 2. Aplica o offset
     traj_est.timestamps += offset
+
+    # 3. DEPOIS corta os N primeiros segundos da trajetória estimada
+    if skip_seconds > 0:
+        cutoff = traj_est.timestamps[0] + skip_seconds
+        mask = traj_est.timestamps >= cutoff
+        traj_est.reduce_to_ids(np.where(mask)[0])
 
     # Sincroniza e alinha
     traj_ref_sync, traj_est_sync = sync.associate_trajectories(
@@ -74,7 +81,7 @@ def evaluate(gt_path, est_path, offset=None, save_plot=None, max_diff=0.05):
         ax.set_xlabel(r'$x$ (m)', fontsize=12)
         ax.set_ylabel(r'$y$ (m)', fontsize=12)
         
-        # 6. Exibe apenas o RMSE discretamente no canto, já que removemos a legenda
+        # 6. Exibe apenas o RMSE discretamente no canto
         ax.text(0.02, 0.98, f"RMSE: {stats['rmse']:.4f} m", 
                 transform=ax.transAxes, fontsize=12, fontweight='bold', color='#333333',
                 verticalalignment='top', bbox=dict(boxstyle='round,pad=0.4', facecolor='#FFFFFF', alpha=0.9, edgecolor='none'))
@@ -93,10 +100,16 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Avaliação de SLAM usando EVO com Offset customizado.")
     parser.add_argument("gt", help="Caminho do Ground Truth (TUM)")
     parser.add_argument("est", help="Caminho da Odometria Estimada (TUM)")
-    parser.add_argument("--offset", type=float, help="Offset de tempo hardcoded para este método")
+    parser.add_argument("--offset", type=str, default="dynamic", help="Offset de tempo ('dynamic' ou valor numérico)")
     parser.add_argument("--plot", help="Caminho para salvar o gráfico .png (opcional)")
-
+    parser.add_argument("--skip_seconds", type=float, default=0.0, help="Descarta os N primeiros segundos da trajetória estimada (instabilidade de inicialização)")
+    
     args = parser.parse_args()
 
-    stats = evaluate(args.gt, args.est, offset=args.offset, save_plot=args.plot)
+    # Lida com a string vinda do bash. Se for 'dynamic' ou 'none', passa None para a função.
+    offset_val = None
+    if args.offset and args.offset.lower() not in ["none", "dynamic"]:
+        offset_val = float(args.offset)
+
+    stats = evaluate(args.gt, args.est, offset=offset_val, save_plot=args.plot, skip_seconds=args.skip_seconds)
     print(json.dumps(stats, indent=2))

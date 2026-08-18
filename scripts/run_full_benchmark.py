@@ -2,13 +2,12 @@
 """
 run_full_benchmark.py
 
-Roda TODOS os métodos (fast_lio, lio_livox, lego_loam) x TODOS os samplers
-(tpe, cmaes, gp) em sequência, um atrás do outro, sem travar a execução
-inteira se uma combinação individual falhar.
+Roda TODOS os métodos x TODOS os samplers (tpe, cmaes, gp) em sequência,
+um atrás do outro, sem travar a execução inteira se uma combinação falhar.
 
-Pensado para rodar em background durante a noite via nohup:
-
-    nohup python3 ~/scripts/run_full_benchmark.py --trials 50 > ~/results/overnight_run.log 2>&1 &
+Uso:
+    nohup python3 ~/scripts/run_full_benchmark.py --trials 50 --dataset forest01_st_square_2022-02-08-23-14-55 \
+        > ~/results/overnight_run.log 2>&1 &
 
 Gera:
 - Um log geral (via stdout, redirecionado pelo nohup)
@@ -17,7 +16,6 @@ Gera:
 """
 
 import os
-import sys
 import json
 import time
 import argparse
@@ -37,8 +35,7 @@ def log(msg):
     print(f"[{ts}] {msg}", flush=True)
 
 
-def run_combo(method, sampler, trials, root_dir, logs_dir):
-    """Roda uma combinação método+sampler, capturando output em arquivo próprio."""
+def run_combo(method, sampler, trials, root_dir, logs_dir, dataset):
     log_path = os.path.join(logs_dir, f"{method}_{sampler}.log")
     optimize_script = os.path.join(root_dir, "scripts", "optuna_optimize.py")
 
@@ -47,10 +44,11 @@ def run_combo(method, sampler, trials, root_dir, logs_dir):
         "--method", method,
         "--trials", str(trials),
         "--sampler", sampler,
+        "--dataset", dataset,
     ]
 
     start = time.time()
-    log(f">>> Iniciando: método={method} sampler={sampler} trials={trials}")
+    log(f">>> Iniciando: método={method} sampler={sampler} trials={trials} dataset={dataset}")
 
     with open(log_path, "w") as logfile:
         result = subprocess.run(cmd, stdout=logfile, stderr=subprocess.STDOUT)
@@ -70,6 +68,7 @@ def run_combo(method, sampler, trials, root_dir, logs_dir):
     return {
         "method": method,
         "sampler": sampler,
+        "dataset": dataset,
         "status": status,
         "exit_code": result.returncode,
         "duration_seconds": round(duration, 1),
@@ -81,12 +80,11 @@ def main():
     parser = argparse.ArgumentParser(
         description="Roda todos os métodos x todos os samplers em sequência."
     )
-    parser.add_argument("--trials", type=int, default=50,
-                         help="Número de trials por combinação método+sampler")
-    parser.add_argument("--methods", nargs="+", default=METHODS,
-                         help=f"Métodos a rodar (default: {METHODS})")
-    parser.add_argument("--samplers", nargs="+", default=SAMPLERS,
-                         help=f"Samplers a rodar (default: {SAMPLERS})")
+    parser.add_argument("--trials", type=int, default=50)
+    parser.add_argument("--methods", nargs="+", default=METHODS)
+    parser.add_argument("--samplers", nargs="+", default=SAMPLERS)
+    parser.add_argument("--dataset", required=True,
+                         help="Nome do dataset, sem extensão (ex: forest01_st_square_2022-02-08-23-14-55)")
     args = parser.parse_args()
 
     root_dir = get_project_root()
@@ -99,6 +97,7 @@ def main():
     log(f"BENCHMARK COMPLETO - {len(combos)} combinações")
     log(f"Métodos:  {args.methods}")
     log(f"Samplers: {args.samplers}")
+    log(f"Dataset:  {args.dataset}")
     log(f"Trials por combinação: {args.trials}")
     log("=" * 60)
 
@@ -107,17 +106,15 @@ def main():
 
     for i, (method, sampler) in enumerate(combos, 1):
         log(f"\n--- Combinação {i}/{len(combos)} ---")
-        r = run_combo(method, sampler, args.trials, root_dir, logs_dir)
+        r = run_combo(method, sampler, args.trials, root_dir, logs_dir, args.dataset)
         results.append(r)
 
-        # Salva o resumo parcial a cada combinação concluída,
-        # assim mesmo que o processo seja interrompido no meio da noite,
-        # você já tem o progresso registrado até aquele ponto.
         summary_path = os.path.join(logs_dir, "summary.json")
         with open(summary_path, "w") as f:
             json.dump({
                 "started_at": datetime.fromtimestamp(overall_start).isoformat(),
                 "last_updated": datetime.now().isoformat(),
+                "dataset": args.dataset,
                 "completed": i,
                 "total": len(combos),
                 "results": results,

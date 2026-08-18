@@ -6,7 +6,11 @@ fast_lio:
   config_target: src/FAST_LIO/config/ouster128.yaml
   odom_topic: /Odometry
   lidar_topic_needed: /os_cloud_node/points
-  time_offset: 1644348493.629311
+  # time_offset e min_matched_poses calibrados para forest01_st_square_2022-02-08-23-14-55 (bag de 62.2s)
+  # Para forest02_straight (107.18s): time_offset=1644348493.629311  min_matched_poses=600
+  time_offset: 1644348493.668
+  bag_duration_sec: 62.2
+  min_matched_poses: 480
   tunable_params:
     - blind
     - max_iteration
@@ -25,7 +29,6 @@ fast_lio:
     filter_size_surf: [0.1, 1.0]
     filter_size_map: [0.1, 1.0]
     point_filter_num: [1, 6]
-  min_matched_poses: 600
 
 lio_livox:
   package: lio_livox
@@ -35,7 +38,10 @@ lio_livox:
   config_target: src/LIO-Livox/config/horizon_config.yaml
   odom_topic: /livox_odometry_mapped
   lidar_topic_needed: /livox/lidar
+  # Para forest02_straight: time_offset=1644348482.598945  min_matched_poses=600
   time_offset: 1644348482.598945
+  bag_duration_sec: 62.2
+  min_matched_poses: 400
   tunable_params:
     - LidarNearestDis
     - FlatThreshold
@@ -51,7 +57,6 @@ lio_livox:
     FlatThreshold: [0.005, 0.08]
     NumFlat: [1, 6]
     KdTreeCornerOutlierDis: [0.05, 0.5]
-  min_matched_poses: 600
 
 lego_loam:
   package: lego_loam
@@ -61,7 +66,10 @@ lego_loam:
   config_target: src/LeGO-LOAM/LeGO-LOAM/include/utility.h
   odom_topic: /aft_mapped_to_init
   lidar_topic_needed: /velodyne_points
-  time_offset: -0.226
+  # Para forest02_straight: time_offset=-0.226  min_matched_poses=100 (bag_duration_sec=107.18)
+  time_offset: -0.318
+  bag_duration_sec: 62.2
+  min_matched_poses: 60
   tunable_params:
     - groundScanInd
     - edgeThreshold
@@ -77,4 +85,61 @@ lego_loam:
     edgeThreshold: [0.02, 0.3]
     surfThreshold: [0.02, 0.3]
     nearestFeatureSearchSqDist: [5, 50]
-  min_matched_poses: 100 
+
+loam_livox:
+  package: loam_livox
+  launch_file: livox.launch
+  config_type: yaml_runtime
+  config_master: configs/loam_livox/performance_realtime.yaml
+  config_target: src/loam_livox/config/performance_realtime.yaml
+  odom_topic: /aft_mapped_to_init
+  lidar_topic_needed: /livox/lidar
+  # time_offset precisa ser recalculado depois que o dataset for restaurado (é wall-clock, muda a cada dia)
+  time_offset: "dynamic"
+  bag_duration_sec: 62.2
+  min_matched_poses: 1000
+  tunable_params:
+    - livox_min_dis
+    - corner_curvature
+    - surface_curvature
+    - mapping_plane_resolution
+    - icp_maximum_iteration
+  baseline:
+    livox_min_dis: 0.1
+    corner_curvature: 0.1
+    surface_curvature: 0.005
+    mapping_plane_resolution: 0.6
+    icp_maximum_iteration: 15
+  search_space:
+    livox_min_dis: [0.05, 1.0]
+    corner_curvature: [0.02, 0.3]
+    surface_curvature: [0.001, 0.02]
+    mapping_plane_resolution: [0.2, 1.2]
+    icp_maximum_iteration: [5, 30]
+
+liorf:
+  package: liorf
+  launch_file: run_lio_sam_ouster.launch
+  config_type: yaml_runtime
+  config_master: configs/liorf/lio_sam_ouster.yaml
+  config_target: src/liorf/config/lio_sam_ouster.yaml
+  odom_topic: /liorf/mapping/odometry
+  lidar_topic_needed: /os_cloud_node/points
+  time_offset: <calcular>
+  bag_duration_sec: 62.2
+  min_matched_poses: <calibrar>
+  tunable_params:
+    - mappingSurfLeafSize
+    - surroundingKeyframeSearchRadius
+    - historyKeyframeFitnessScore
+    - downsampleRate
+  baseline:
+    mappingSurfLeafSize: 0.4
+    surroundingKeyframeSearchRadius: 50.0
+    historyKeyframeFitnessScore: 0.3
+    downsampleRate: 2
+  search_space:
+    mappingSurfLeafSize: [0.1, 1.0]
+    surroundingKeyframeSearchRadius: [10.0, 80.0]
+    historyKeyframeFitnessScore: [0.1, 0.6]
+    downsampleRate: [1, 4]

@@ -1,0 +1,32 @@
+{
+  "baseline": {
+    "params": {
+      "livox_min_dis": 0.1,
+      "corner_curvature": 0.1,
+      "surface_curvature": 0.005,
+      "mapping_plane_resolution": 0.6,
+      "icp_maximum_iteration": 15
+    },
+    "stats": {
+      "peak_mem_mb": 2015.6328125,
+      "avg_cpu_pct": 181.0069418279919,
+      "wall_time_sec": 67.50435161590576
+    }
+  },
+  "best": {
+    "params": {
+      "livox_min_dis": 0.1609180549698883,
+      "corner_curvature": 0.1314760655148585,
+      "surface_curvature": 0.008853846329423607,
+      "mapping_plane_resolution": 1.19855787354599,
+      "icp_maximum_iteration": 16
+    },
+    "rmse": 0.7102989563807958,
+    "trial_number": 24,
+    "stats": {
+      "peak_mem_mb": 2040.984375,
+      "avg_cpu_pct": 122.36792026246985,
+      "wall_time_sec": 107.80521392822266
+    }
+  }
+}
