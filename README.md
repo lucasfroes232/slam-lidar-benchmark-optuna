@@ -1,17 +1,21 @@
 # SLAM LiDAR Benchmark with Optuna
 
-![ROS](https://img.shields.io/badge/ROS_Melodic-0B1120?style=for-the-badge&logo=ros&logoColor=22D3EE)
-![Python](https://img.shields.io/badge/Python-0B1120?style=for-the-badge&logo=python&logoColor=3776AB)
-![Docker](https://img.shields.io/badge/Docker-0B1120?style=for-the-badge&logo=docker&logoColor=2496ED)
-![Optuna](https://img.shields.io/badge/Optuna-0B1120?style=for-the-badge&logo=optuna&logoColor=00A98F)
+![ROS](https://img.shields.io/badge/ROS_Melodic-22314E?style=flat&logo=ros&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
+![Optuna](https://img.shields.io/badge/Optuna-4B8BBE?style=flat&logo=optuna&logoColor=white)
 
 A benchmarking pipeline for comparing LiDAR(-inertial) SLAM methods in forest environments, with automated hyperparameter optimization via [Optuna](https://optuna.org/). Built on ROS1 Melodic, running inside Docker.
 
 ## Demo
 
 <!-- Add: docs/images/trajectory_demo.gif -->
-![Live trajectory estimation](docs/images/video.gif)
-*Real-time trajectory estimation running on a forest dataset.*
+<p align="center">
+  <img src="docs/images/video.gif" width="800" alt="Live trajectory estimation">
+  <br>
+  <em>Real-time trajectory estimation running on a forest dataset.</em>
+</p>
+
 
 <!-- Add: docs/images/rmse_reduction_forest02.png -->
 ![RMSE reduction after optimization — TIERS-FOREST02](docs/images/barras_rmse.png)
@@ -73,8 +77,12 @@ Results below are from two real-world sequences of the [TIERS forest dataset](ht
 Loosely-coupled methods consistently showed higher sensitivity to hyperparameter tuning than tightly-coupled ones, at the cost of a significant increase in execution time for the best-performing case (LOAM-Livox: +220% on TIERS-FOREST02). See the paper for the full fANOVA and computational-cost analysis.
 
 <!-- Add: docs/images/convergence_curves.png -->
-![Convergence curves FOREST01](docs/images/conv_liolivox_fores01.png)
-![Convergence curves FOREST02](docs/images/conv_liolivox_fores02.png)
+<p align="center">
+  <img src="docs/images/conv_liolivox_fores01.png" width="48%" alt="Convergence FOREST01">
+  <img src="docs/images/conv_liolivox_fores02.png" width="48%" alt="Convergence FOREST02">
+  <br>
+  <em>Convergence curves for TPE, CMA-ES, and GP, across method LIO-Livox and both datasets.</em>
+</p>
 
 * convergence curves for TPE, CMA-ES, and GP, across method LIO-Livox and both datasets.*
 
