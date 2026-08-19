@@ -18,16 +18,19 @@ A benchmarking pipeline for comparing LiDAR(-inertial) SLAM methods in forest en
 </p>
 
 <p align="center">
-  <img src="docs/images/barras_rmse.png" width="700" alt="RMSE reduction after optimization">
+  <img src="docs/images/barras_rmse.png" width="500" alt="RMSE reduction after optimization">
   <br>
-  <em>Baseline vs. best-trial RMSE for all four methods on TIERS-FOREST02. LOAM-Livox shows the largest reduction (56.4%), while tightly-coupled methods (FAST-LIO2, LIO-Livox) show only marginal gains — highlighting the accuracy/robustness trade-off discussed in the paper.</em>
+  <em>Baseline vs. best-trial RMSE on TIERS-FOREST02. LOAM-Livox shows a significant 56.4% reduction, while tightly-coupled methods show marginal gains — illustrating the accuracy/robustness trade-off.</em>
 </p>
 <details>
 <summary>More visuals</summary>
 
 <!-- Add: docs/images/forest_environment.png -->
-![Forest environment and trajectory](docs/images/dataset.png)
-*The TIERS-FOREST dataset: dense forest canopy (left) and the recorded robot trajectory (right). See the [TIERS LiDAR dataset](https://github.com/tiers/tiers-lidars-dataset).*
+<p align="center">
+  <img src="docs/images/dataset.png" width="500" alt="Forest environment and trajectory">
+  <br>
+  <em>Dense canopy and robot trajectory from the <a href="https://github.com/tiers/tiers-lidars-dataset">TIERS LiDAR dataset</a>.</em>
+</p>
 
 <!-- Add: docs/videos/fast_lio_demo.mp4 (or link to an external host, e.g. YouTube, if the file is too large for git) -->
 A longer screen recording of FAST-LIO running with RViz visualization is available at `docs/videos/fast_lio_demo.mp4`.
