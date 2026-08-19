@@ -7,24 +7,20 @@
 
 A benchmarking pipeline for comparing LiDAR(-inertial) SLAM methods in forest environments, with automated hyperparameter optimization via [Optuna](https://optuna.org/). Built on ROS1 Melodic, running inside Docker.
 
-Running the trajectory estimation pipeline directly on raw LiDAR data.
-
 <p align="center">
-  <img src="docs/images/video.gif" width="300" alt="Live trajectory estimation">
+  <img src="docs/images/video.gif" width="400" alt="Live trajectory estimation">
   <br>
   <em>Real-time trajectory estimation running on a forest dataset.</em>
 </p>
 
----
 Evaluations were performed on the TIERS LiDAR dataset, a challenging scenario with dense canopy and a lack of regular geometric structures.
 
 <p align="center">
-  <img src="docs/images/dataset.png" width="200" alt="Forest environment and trajectory">
+  <img src="docs/images/dataset.png" width="400" alt="Forest environment and trajectory">
   <br>
   <em>Dense canopy and robot trajectory from the <a href="https://github.com/tiers/tiers-lidars-dataset">TIERS LiDAR dataset</a>.</em>
 </p>
-
----  
+ 
 Results of the Optuna hyperparameter tuning, demonstrating the accuracy/robustness trade-off across different SLAM architectures.
 
 <p align="center">
