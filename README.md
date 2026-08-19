@@ -1,26 +1,27 @@
 # SLAM LiDAR Benchmark with Optuna
 
-![ROS](https://img.shields.io/badge/ROS_Melodic-22314E?style=flat&logo=ros&logoColor=white)
-![Python](https://img.shields.io/badge/Python-3776AB?style=flat&logo=python&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)
-![Optuna](https://img.shields.io/badge/Optuna-4B8BBE?style=flat&logo=optuna&logoColor=white)
+![ROS](https://img.shields.io/badge/ROS-22314E?style=for-the-badge&logo=ros&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![Optuna](https://img.shields.io/badge/Optuna-4B8BBE?style=for-the-badge&logo=optuna&logoColor=white)
 
 A benchmarking pipeline for comparing LiDAR(-inertial) SLAM methods in forest environments, with automated hyperparameter optimization via [Optuna](https://optuna.org/). Built on ROS1 Melodic, running inside Docker.
 
 ## Demo
 
-<!-- Add: docs/images/trajectory_demo.gif -->
+## Demo
+
 <p align="center">
-  <img src="docs/images/video.gif" width="800" alt="Live trajectory estimation">
+  <img src="docs/images/video.gif" width="700" alt="Live trajectory estimation">
   <br>
   <em>Real-time trajectory estimation running on a forest dataset.</em>
 </p>
 
-
-<!-- Add: docs/images/rmse_reduction_forest02.png -->
-![RMSE reduction after optimization — TIERS-FOREST02](docs/images/barras_rmse.png)
-*Baseline vs. best-trial RMSE for all four methods on TIERS-FOREST02. LOAM-Livox shows the largest reduction (56.4%), while tightly-coupled methods (FAST-LIO2, LIO-Livox) show only marginal gains — highlighting the accuracy/robustness trade-off discussed in the paper.*
-
+<p align="center">
+  <img src="docs/images/barras_rmse.png" width="700" alt="RMSE reduction after optimization">
+  <br>
+  <em>Baseline vs. best-trial RMSE for all four methods on TIERS-FOREST02. LOAM-Livox shows the largest reduction (56.4%), while tightly-coupled methods (FAST-LIO2, LIO-Livox) show only marginal gains — highlighting the accuracy/robustness trade-off discussed in the paper.</em>
+</p>
 <details>
 <summary>More visuals</summary>
 
@@ -78,8 +79,8 @@ Loosely-coupled methods consistently showed higher sensitivity to hyperparameter
 
 <!-- Add: docs/images/convergence_curves.png -->
 <p align="center">
-  <img src="docs/images/conv_liolivox_fores01.png" width="48%" alt="Convergence FOREST01">
-  <img src="docs/images/conv_liolivox_fores02.png" width="48%" alt="Convergence FOREST02">
+  <img src="docs/images/conv_liolivox_forest01.png" width="48%" alt="Convergence FOREST01">
+  <img src="docs/images/conv_liolivox_forest02.png" width="48%" alt="Convergence FOREST02">
   <br>
   <em>Convergence curves for TPE, CMA-ES, and GP, across method LIO-Livox and both datasets.</em>
 </p>
