@@ -7,35 +7,31 @@
 
 A benchmarking pipeline for comparing LiDAR(-inertial) SLAM methods in forest environments, with automated hyperparameter optimization via [Optuna](https://optuna.org/). Built on ROS1 Melodic, running inside Docker.
 
-## Demo
-
-## Demo
+Running the trajectory estimation pipeline directly on raw LiDAR data.
 
 <p align="center">
-  <img src="docs/images/video.gif" width="700" alt="Live trajectory estimation">
+  <img src="docs/images/video.gif" width="300" alt="Live trajectory estimation">
   <br>
   <em>Real-time trajectory estimation running on a forest dataset.</em>
 </p>
 
-<p align="center">
-  <img src="docs/images/barras_rmse.png" width="500" alt="RMSE reduction after optimization">
-  <br>
-  <em>Baseline vs. best-trial RMSE on TIERS-FOREST02. LOAM-Livox shows a significant 56.4% reduction, while tightly-coupled methods show marginal gains — illustrating the accuracy/robustness trade-off.</em>
-</p>
-<details>
-<summary>More visuals</summary>
+---
+Evaluations were performed on the TIERS LiDAR dataset, a challenging scenario with dense canopy and a lack of regular geometric structures.
 
-<!-- Add: docs/images/forest_environment.png -->
 <p align="center">
-  <img src="docs/images/dataset.png" width="500" alt="Forest environment and trajectory">
+  <img src="docs/images/dataset.png" width="200" alt="Forest environment and trajectory">
   <br>
   <em>Dense canopy and robot trajectory from the <a href="https://github.com/tiers/tiers-lidars-dataset">TIERS LiDAR dataset</a>.</em>
 </p>
 
-<!-- Add: docs/videos/fast_lio_demo.mp4 (or link to an external host, e.g. YouTube, if the file is too large for git) -->
-A longer screen recording of FAST-LIO running with RViz visualization is available at `docs/videos/fast_lio_demo.mp4`.
+---  
+Results of the Optuna hyperparameter tuning, demonstrating the accuracy/robustness trade-off across different SLAM architectures.
 
-</details>
+<p align="center">
+  <img src="docs/images/barras_rmse.png" width="300" alt="RMSE reduction after optimization">
+  <br>
+  <em>Baseline vs. best-trial RMSE on TIERS-FOREST02. LOAM-Livox shows a significant 56.4% reduction, while tightly-coupled methods show marginal gains.</em>
+</p>
 
 ## Overview
 
