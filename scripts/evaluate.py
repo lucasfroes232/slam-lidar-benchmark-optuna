@@ -9,17 +9,17 @@ def evaluate(gt_path, est_path, offset=None, save_plot=None, max_diff=0.1, skip_
     traj_ref = file_interface.read_tum_trajectory_file(gt_path)
     traj_est = file_interface.read_tum_trajectory_file(est_path)
 
-    # 1. Calcula o offset PRIMEIRO (para alinhar T=0 com T=0 antes de cortar)
+    # Calcula o offset PRIMEIRO (para alinhar T=0 com T=0 antes de cortar)
     if offset is None:
         offset = traj_ref.timestamps[0] - traj_est.timestamps[0]
         print(f"Aviso: Offset não fornecido. Usando cálculo dinâmico: {offset:.3f} s")
     else:
         print(f"Usando o offset informado: {offset:.3f} s")
 
-    # 2. Aplica o offset
+    # Aplica o offset
     traj_est.timestamps += offset
 
-    # 3. DEPOIS corta os N primeiros segundos da trajetória estimada
+    #corta os N primeiros segundos da trajetória estimada
     if skip_seconds > 0:
         cutoff = traj_est.timestamps[0] + skip_seconds
         mask = traj_est.timestamps >= cutoff
@@ -29,7 +29,7 @@ def evaluate(gt_path, est_path, offset=None, save_plot=None, max_diff=0.1, skip_
     traj_ref_sync, traj_est_sync = sync.associate_trajectories(
         traj_ref, traj_est, max_diff=max_diff)
     
-    # Alinhamento Umeyama tradicional (você pode desativar se a trajetória entortar)
+    # Alinhamento Umeyama tradicional
     traj_est_sync.align(traj_ref_sync, correct_scale=False)
 
     # Calcula APE
@@ -56,37 +56,38 @@ def evaluate(gt_path, est_path, offset=None, save_plot=None, max_diff=0.1, skip_
 
         xyz_ref = traj_ref_sync.positions_xyz
         xyz_est = traj_est_sync.positions_xyz
-
-        # 1. Fundo e Grade (Estilo Seaborn limpo)
+        
+        #Estilizando grafico
+        # Fundo e Grade
         ax.set_facecolor('#EAEAF2')
         ax.grid(True, color='white', linewidth=1.5, linestyle='-')
         for spine in ax.spines.values():
             spine.set_visible(False)
 
-        # 2. Ground Truth: Cinza-azulado elegante
+        #Ground Truth
         ax.plot(xyz_ref[:, 0], xyz_ref[:, 1], color='#636E72', linestyle='--', 
                 linewidth=2.5, zorder=2)
 
-        # 3. Trajetória Estimada: Azul vibrante natural
+        #Trajetória Estimada
         ax.plot(xyz_est[:, 0], xyz_est[:, 1], color='#1E88E5', linestyle='-', 
                 linewidth=2.5, zorder=3)
 
-        # 4. Símbolos de Começo e Fim (Cores ricas e orgânicas)
+        #Símbolos de Começo e Fim
         ax.scatter(xyz_ref[0, 0], xyz_ref[0, 1], color='#43A047', s=130, marker='o', 
                    zorder=4, edgecolors='white', linewidths=1.5)
         ax.scatter(xyz_ref[-1, 0], xyz_ref[-1, 1], color='#8E24AA', s=130, marker='X', 
                    zorder=4, edgecolors='white', linewidths=1.5)
 
-        # 5. Textos dos Eixos (Mantendo a notação matemática limpa)
+        #Textos dos Eixos
         ax.set_xlabel(r'$x$ (m)', fontsize=12)
         ax.set_ylabel(r'$y$ (m)', fontsize=12)
         
-        # 6. Exibe apenas o RMSE discretamente no canto
+        #Exibeo RMSE 
         ax.text(0.02, 0.98, f"RMSE: {stats['rmse']:.4f} m", 
                 transform=ax.transAxes, fontsize=12, fontweight='bold', color='#333333',
                 verticalalignment='top', bbox=dict(boxstyle='round,pad=0.4', facecolor='#FFFFFF', alpha=0.9, edgecolor='none'))
         
-        # Escala igual (Obrigatório para visualização correta de mapas)
+        # Escala
         ax.set_aspect('equal', adjustable='box')
 
         fig.tight_layout()

@@ -36,7 +36,7 @@ def extrair_convergencia(csv_path):
     # Garante que está na ordem cronológica de execução
     df = df.sort_values("number")
 
-    # Calcula o menor valor visto ATÉ aquele trial (cumulative minimum)
+    # Calcula o menor valor visto ATÉ aquele trial
     melhor_rmse = df["value"].cummin()
     numero_trials = df["number"]
 

@@ -1,317 +1,237 @@
-# LiDAR SLAM Benchmark with Optuna
+# SLAM LiDAR Benchmark with Optuna
 
-[![ROS Melodic](https://img.shields.io/badge/ROS-Melodic-22314E?logo=ros)](http://wiki.ros.org/melodic)
-[![Python](https://img.shields.io/badge/Python-2%20%7C%203-3776AB?logo=python&logoColor=white)](https://www.python.org/)
-[![Optuna](https://img.shields.io/badge/Optuna-optimization-6B4FBB)](https://optuna.org/)
-[![License](https://img.shields.io/badge/license-academic-lightgrey)](#license)
+![ROS](https://img.shields.io/badge/ROS_Melodic-0B1120?style=for-the-badge&logo=ros&logoColor=22D3EE)
+![Python](https://img.shields.io/badge/Python-0B1120?style=for-the-badge&logo=python&logoColor=3776AB)
+![Docker](https://img.shields.io/badge/Docker-0B1120?style=for-the-badge&logo=docker&logoColor=2496ED)
+![Optuna](https://img.shields.io/badge/Optuna-0B1120?style=for-the-badge&logo=optuna&logoColor=00A98F)
 
-> Reproducible benchmarking of LiDAR-inertial SLAM systems in forest environments, with automated hyperparameter optimization and computational-cost analysis.
+A benchmarking pipeline for comparing LiDAR(-inertial) SLAM methods in forest environments, with automated hyperparameter optimization via [Optuna](https://optuna.org/). Built on ROS1 Melodic, running inside Docker.
 
-**Topics:** `SLAM` `LiDAR` `LiDAR-inertial odometry` `ROS` `forest robotics` `Optuna` `TPE` `Gaussian Process` `CMA-ES` `evo` `benchmarking`
+## Demo
 
-<!-- MEDIA PLACEHOLDER 1
-Put the GIF at: assets/fast_lio_forest01.gif
-Suggested caption: FAST-LIO2 replay on the TIERS-FOREST01 dataset.
-When the file is available, replace this comment with:
-<p align="center">
-    <img src="assets/fast_lio_forest01.gif" alt="FAST-LIO2 running on a forest dataset" width="850">
-</p>
--->
+<!-- Add: docs/images/trajectory_demo.gif -->
+![Live trajectory estimation](docs/images/video.gif)
+*Real-time trajectory estimation running on a forest dataset.*
+
+<!-- Add: docs/images/rmse_reduction_forest02.png -->
+![RMSE reduction after optimization — TIERS-FOREST02](docs/images/barras_rmse.png)
+*Baseline vs. best-trial RMSE for all four methods on TIERS-FOREST02. LOAM-Livox shows the largest reduction (56.4%), while tightly-coupled methods (FAST-LIO2, LIO-Livox) show only marginal gains — highlighting the accuracy/robustness trade-off discussed in the paper.*
+
+<details>
+<summary>More visuals</summary>
+
+<!-- Add: docs/images/forest_environment.png -->
+![Forest environment and trajectory](docs/images/dataset.png)
+*The TIERS-FOREST dataset: dense forest canopy (left) and the recorded robot trajectory (right). See the [TIERS LiDAR dataset](https://github.com/tiers/tiers-lidars-dataset).*
+
+<!-- Add: docs/videos/fast_lio_demo.mp4 (or link to an external host, e.g. YouTube, if the file is too large for git) -->
+A longer screen recording of FAST-LIO running with RViz visualization is available at `docs/videos/fast_lio_demo.mp4`.
+
+</details>
 
 ## Overview
 
-This repository evaluates SLAM methods under the geometric and sensing conditions of forest environments. The benchmark replays ROS bag files, injects trial-specific parameters, runs a SLAM launch file, converts the estimated odometry to TUM format, and minimizes aligned Absolute Pose Error (APE) RMSE with [Optuna](https://optuna.org/).
+This project evaluates multiple state-of-the-art SLAM methods on the same rosbag datasets, optimizing each method's hyperparameters with three different search strategies (TPE, CMA-ES, Gaussian Process), and comparing the results on:
 
-The experiment compares three samplers:
+- **Trajectory accuracy** (RMSE / Absolute Pose Error, via [evo](https://github.com/MichaelGrupp/evo))
+- **Hyperparameter importance** (fANOVA)
+- **Optimizer convergence** (best RMSE per trial)
+- **Computational cost** (execution time, CPU usage, peak memory)
 
-- **TPE**: Tree-structured Parzen Estimator
-- **GP**: Gaussian Process Bayesian optimization
-- **CMA-ES**: Covariance Matrix Adaptation Evolution Strategy
+## Methods supported
 
-The evaluation workflow is:
+| Method | Type | Config format |
+|---|---|---|
+| [FAST-LIO2](https://github.com/hku-mars/FAST_LIO) | Tightly-coupled | YAML (runtime) |
+| [LIO-Livox](https://github.com/Livox-SDK/LIO-Livox) | Tightly-coupled | YAML (runtime, OpenCV FileStorage format) |
+| [LeGO-LOAM](https://github.com/RobustFieldAutonomyLab/LeGO-LOAM) | Loosely-coupled | C++ header (compile-time) |
+| [LOAM-Livox](https://github.com/hku-mars/loam_livox) | Loosely-coupled | YAML (runtime) |
 
-```text
-TIERS ROS bag + ground truth
-                            |
-                            v
-     parameter injection / build
-                            |
-                            v
-             ROS SLAM replay
-                            |
-                            v
-             odometry -> TUM
-                            |
-                            v
-            evo APE / RMSE score
-                            |
-                            v
-             Optuna next trial
+
+## Results
+
+Results below are from two real-world sequences of the [TIERS forest dataset](https://github.com/tiers/tiers-lidars-dataset): **TIERS-FOREST01** (closed-loop trajectory) and **TIERS-FOREST02** (near-straight-line trajectory). Each method was run with its default configuration (baseline) and with 50 trials per optimizer (TPE, CMA-ES, GP).
+
+**RMSE — TIERS-FOREST01**
+
+| Method | Baseline | Best Trial | Reduction |
+|---|---|---|---|
+| FAST-LIO2 | 0.1328 m | 0.1321 m | 0.5% |
+| LIO-Livox | 0.0799 m | 0.0793 m | 0.8% |
+| LeGO-LOAM | 0.1036 m | 0.0985 m | 4.9% |
+| LOAM-Livox | 0.7779 m | 0.7193 m | 7.5% |
+
+**RMSE — TIERS-FOREST02**
+
+| Method | Baseline | Best Trial | Reduction |
+|---|---|---|---|
+| FAST-LIO2 | 0.1097 m | 0.1074 m | 2.1% |
+| LIO-Livox | 0.0692 m | 0.0666 m | 3.8% |
+| LeGO-LOAM | 0.0815 m | 0.0761 m | 6.6% |
+| LOAM-Livox | 1.0530 m | 0.4591 m | **56.4%** |
+
+Loosely-coupled methods consistently showed higher sensitivity to hyperparameter tuning than tightly-coupled ones, at the cost of a significant increase in execution time for the best-performing case (LOAM-Livox: +220% on TIERS-FOREST02). See the paper for the full fANOVA and computational-cost analysis.
+
+<!-- Add: docs/images/convergence_curves.png -->
+![Convergence curves FOREST01](docs/images/conv_liolivox_fores01.png)
+![Convergence curves FOREST02](docs/images/conv_liolivox_fores02.png)
+
+* convergence curves for TPE, CMA-ES, and GP, across method LIO-Livox and both datasets.*
+
+## Computational Cost
+
+Improving RMSE is not free: hyperparameter optimization can shift the operating point of each method towards heavier processing, which matters for real-time or embedded deployment. Cost was measured with [`psutil`](https://github.com/giampaolo/psutil), sampling CPU and memory every second during execution.
+
+**Baseline vs. best-trial cost — TIERS-FOREST02**
+
+| Method | Execution time | Avg. CPU | Peak RAM |
+|---|---|---|---|
+| FAST-LIO2 | marginal (< 12%) | — | 2305.0 MB → 3192.0 MB |
+| LIO-Livox | marginal (< 12%) | 161.5% → 46.4% | 804.4 MB → 1630.5 MB |
+| LeGO-LOAM | marginal (< 12%) | — | ~350–360 MB (stable) |
+| LOAM-Livox | 116.5 s → 372.9 s (**+220%**) | 167.9% → 59.8% | 2716.0 MB → 2702.7 MB (stable) |
+
+> **Note:** Although the `liorf` repository is included in the workspace structure, it was not evaluated due to time constraints. Therefore, all results and metrics presented below reflect only the comparison between **FAST-LIO2, LIO-Livox, LeGO-LOAM, and LOAM-Livox**
+
+The method with the largest accuracy gain (LOAM-Livox) is also the one with the steepest cost increase — its best-trial configuration runs at ~3.2x the baseline execution time, which would likely make it unsuitable for real-time operation despite the accuracy improvement. Interestingly, CPU utilization *drops* for both LIO-Livox and LOAM-Livox in their best trials, suggesting the optimized configurations trade parallelism for a leaner (though slower) execution — a relevant consideration for power-constrained embedded platforms. LeGO-LOAM keeps the leanest and most stable memory footprint across both datasets and configurations.
+
+## Requirements
+
+- Docker with a Linux container running **Ubuntu 18.04 + ROS1 Melodic**
+- Python 3.6 (system) for the optimization pipeline, Python 2.7 for ROS-side scripts (`bag_to_tum.py`)
+- catkin workspace built with `catkin_make` (not `catkin build` — the two are not interchangeable in this workspace)
+- GTSAM ≥ 4.0 (built from source, required by LeGO-LOAM and liorf)
+- Python packages: `optuna`, `scikit-optimize` (GP sampler), `psutil`, `pandas`, `matplotlib`, `plotly`, `fanova` (optional, for fANOVA — falls back to `MeanDecreaseImpurityImportanceEvaluator` if unavailable), `evo`
+
+```bash
+pip3 install optuna scikit-optimize psutil pandas matplotlib plotly fanova evo
 ```
 
-## Methods and status
+## Project structure
 
-The canonical method definitions, topics, parameter ranges, offsets, and pose thresholds are in [`methods/registry.yaml`](methods/registry.yaml).
-
-| Registry key | Method | Coupling | Sensor/configuration | Status |
-|---|---|---|---|---|
-| `fast_lio` | FAST-LIO2 | Tightly coupled | Ouster128, runtime YAML | Ready for calibrated datasets |
-| `lio_livox` | LIO-Livox | Tightly coupled | Livox Horizon, runtime YAML | Ready for calibrated datasets |
-| `lego_loam` | LeGO-LOAM | Loosely coupled | Velodyne16, compile-time header | Ready; recompiles per trial |
-| `loam_livox` | LOAM-Livox | Loosely coupled | Livox, runtime YAML | Ready for calibrated datasets |
-| `liorf` | LIO-RF | Tightly coupled | Ouster128, runtime YAML | Registered, calibration pending |
-
-`liorf` is intentionally not presented as reproducible yet: its registry entry still contains placeholder values for `time_offset` and `min_matched_poses`. Calibrate those values before running it in a benchmark study.
-
-## Repository layout
-
-```text
+```
 .
-├── configs/                 # Master configurations and search-space inputs
-├── datasets/                # Local ROS bags and TUM ground truth
-├── methods/registry.yaml    # Method registry and optimization definitions
-├── results/                 # Studies, trial outputs, logs, and analysis artifacts
+├── Dockerfile
+├── src/                        # catkin workspace (bind mount)
+│   ├── FAST_LIO/
+│   ├── livox_ros_driver/       # dependency of FAST_LIO, LIO-Livox, LOAM-Livox
+│   ├── LIO-Livox/
+│   ├── LeGO-LOAM/
+│   ├── loam_livox/
+│   └── liorf/
+│
+├── datasets/                   # NOT versioned — see .gitignore
+│   ├── <dataset_name>.bag
+│   └── ground_truth/
+│       └── gt_<dataset_name>.tum
+│
+├── configs/                    # master configs, versioned outside src/
+│   ├── fast_lio/ouster128.yaml
+│   ├── lio_livox/horizon.yaml
+│   ├── lego_loam/velodyne16_utility.h
+│   ├── loam_livox/performance_realtime.yaml
+│   └── liorf/lio_sam_ouster.yaml
+│
+├── methods/
+│   └── registry.yaml           # describes every method: how to run it, odom topic, tunable params, search space
+│
 ├── scripts/
-│   ├── run_method.py        # Run one method on one bag
-│   ├── optuna_optimize.py   # Run one persisted Optuna study
-│   ├── run_full_benchmark.py# Run method/sampler combinations
-│   ├── bag_to_tum.py        # Convert recorded odometry to TUM
-│   ├── evaluate.py          # Align and evaluate trajectories with evo
-│   └── plot_*.py            # Convergence, fANOVA, and cost reports
-├── src/                     # ROS/catkin workspaces and SLAM implementations
-├── Dockerfile               # ROS Melodic development environment
-└── README.md
+│   ├── bag_to_tum.py           # (Python 2) generic: bag + topic -> .tum
+│   ├── run_method.py           # generic: roscore + SLAM node + bag playback + resource monitoring
+│   ├── evaluate.py             # (Python 3) generic: gt.tum + est.tum -> RMSE/APE + plot
+│   ├── optuna_optimize.py      # generic: reads registry.yaml, optimizes any method
+│   ├── run_full_benchmark.py   # runs all method x sampler combinations sequentially
+│   ├── measure_cost.py         # re-runs baseline + best trial with resource monitoring
+│   ├── plot_convergencia.py    # best-RMSE-so-far curve, per sampler
+│   ├── plot_fanova.py          # hyperparameter importance (fANOVA), exported as HTML
+│   ├── plot_custo_baseline_vs_best.py  # cost comparison chart (baseline vs. best trial)
+│   └── report_best_trials.py   # text summary of top trials per method/sampler
+│
+└── results/
+    └── <method>/<config>/<dataset>/
+        ├── study_<sampler>.db      # NOT versioned — Optuna SQLite storage
+        ├── study_<sampler>.csv     # trial history (params, RMSE, resource usage)
+        ├── <sampler>/trial_XXXX/
+        │   ├── config_used.yaml (or utility_used.h)
+        │   ├── odom.tum             # NOT versioned
+        │   ├── ape_stats.json
+        │   └── baseline_ape.png     # only kept for record-breaking trials
+        └── cost/
+            ├── custo_<sampler>.json
+            └── custo_baseline_vs_best_<sampler>.png
 ```
 
-## Environment
+## Pipeline
 
-The supported environment is **Ubuntu 18.04 with ROS Melodic**, as defined by [`Dockerfile`](Dockerfile). The image installs ROS, PCL, the Livox SDK, GTSAM, Optuna, `evo`, and the Python dependencies used by the scripts.
+```
+dataset.bag ──▶ run_method.py (roslaunch + rosbag record/play) ──▶ odom.tum
+                                                                       │
+gt.tum ────────────────────────────────────────────────────────▶ evaluate.py ──▶ RMSE / APE
+                                                                       │
+                                                              optuna_optimize.py
+                                                            (TPE / CMA-ES / GP, 50 trials)
+```
 
-The Dockerfile creates `/root/slam_ws` but does not copy this repository into the image. Mount the repository's `src/` directory into that workspace when starting the container:
+Each trial: inject sampled hyperparameters into the method's config → run the SLAM node against the dataset → convert recorded odometry to TUM format → evaluate against ground truth → feed RMSE back to the optimizer.
+
+## Usage
+
+### 1. Add a new dataset
+
+1. Copy the `.bag` file to `datasets/`.
+2. Generate the ground truth `.tum` from the pose topic, named `gt_<dataset_name>.tum` (must match the `--dataset` argument used everywhere).
+3. Determine `bag_duration_sec` (`rosbag info <bag>`).
+4. For each method, run the baseline manually to compute `time_offset` (clock offset between the ground truth and the SLAM method's odometry) and calibrate `min_matched_poses` (used to discard trials with tracking failures).
+5. Update `methods/registry.yaml` accordingly.
+
+### 2. Run a single method/sampler
 
 ```bash
-docker build -t slam-lidar-benchmark-optuna:ros-melodic .
-
-docker run --rm -it --network host \
-    -v "$PWD:/workspace/repo" \
-    -v "$PWD/src:/root/slam_ws/src" \
-    -w /workspace/repo \
-    slam-lidar-benchmark-optuna:ros-melodic
+python3 scripts/optuna_optimize.py --method fast_lio --sampler tpe --trials 50 --dataset <dataset_name>
 ```
 
-Inside the container, build the catkin workspace before running a study:
+### 3. Run everything (all methods x all samplers)
 
 ```bash
-source /opt/ros/melodic/setup.bash
-cd /root/slam_ws
-catkin_make
-source devel/setup.bash
-cd /workspace/repo
+nohup python3 scripts/run_full_benchmark.py --trials 50 --dataset <dataset_name> \
+    > results/overnight_run.log 2>&1 &
 ```
 
-The optimizer currently assumes the workspace path `/root/slam_ws`. Run the benchmark in an isolated ROS environment because cleanup uses broad ROS process termination commands.
-
-If `catkin_make` reports that `GeographicLibConfig.cmake` cannot be found, rebuild the Docker image after pulling the current [`Dockerfile`](Dockerfile). LIO-RF requires `libgeographiclib-dev`, which is installed by the image:
+### 4. Measure computational cost (baseline vs. best trial only)
 
 ```bash
-docker build --no-cache -t slam-lidar-benchmark-optuna:ros-melodic .
+python3 scripts/measure_cost.py --method fast_lio --sensor ouster128 --dataset <dataset_name> --sampler tpe
+python3 scripts/plot_custo_baseline_vs_best.py --method fast_lio --sensor ouster128 --dataset <dataset_name> --sampler tpe
 ```
 
-Then start a new container and rebuild the workspace:
+### 5. Generate analysis plots
 
 ```bash
-cd /root/slam_ws
-catkin_make
-source devel/setup.bash
-rospack find fast_lio
+python3 scripts/plot_convergencia.py --method fast_lio --sensor ouster128 --dataset <dataset_name>
+python3 scripts/plot_fanova.py --method fast_lio --sensor ouster128 --dataset <dataset_name> --sampler tpe
+python3 scripts/report_best_trials.py --dataset <dataset_name> --top-n 3
 ```
 
-The `rospack find` command should return `/root/slam_ws/src/FAST_LIO`. A successful `catkin_make` is required before launching `fast_lio`; sourcing `devel/setup.bash` alone does not create the `fastlio_mapping` executable.
+## Adding a new SLAM method
 
-## Datasets
+1. Clone the package into `src/`, compile with `catkin_make`.
+2. Find the real odometry topic (`rostopic list` while playing a bag manually).
+3. Copy the method's master config into `configs/<method>/`.
+4. Add an entry to `methods/registry.yaml` (package, launch file, config type, tunable params, search space, baseline, time offset, `bag_duration_sec`, `min_matched_poses`).
+5. Disable RViz in the launch file (comment out the `<node pkg="rviz" .../>` line) to avoid a window opening on every trial.
+6. Test with a single trial before running the full 50.
 
-The experiments use the TIERS multi-modal LiDAR dataset:
+## Known caveats
 
-- [TIERS-FOREST01](https://github.com/tiers/tiers-lidars-dataset): closed-loop trajectory (`forest01_square`)
-- [TIERS-FOREST02](https://github.com/tiers/tiers-lidars-dataset): mostly straight trajectory (`forest02_straight`)
-
-Place the files using this exact layout. Dataset files are ignored by Git because of their size, although they may be present in a local checkout:
-
-```text
-datasets/
-├── forest01_square.bag
-├── forest02_straight.bag
-└── ground_truth/
-        ├── gt_forest01_square.tum
-        └── gt_forest02_straight.tum
-```
-
-The command-line dataset name is the basename without `.bag`, for example `forest01_square`.
-
-## Running the benchmark
-
-### Run one optimized study
-
-The baseline is enqueued as trial `0000`. The study is persisted in SQLite and resumes when the same method, dataset, and sampler are invoked again.
-
-```bash
-python3 scripts/optuna_optimize.py \
-    --method loam_livox \
-    --sampler tpe \
-    --trials 50 \
-    --dataset forest01_square
-```
-
-Supported method keys are `fast_lio`, `lio_livox`, `lego_loam`, `loam_livox`, and `liorf` subject to the calibration status above. Supported samplers are `tpe`, `gp`, and `cmaes`.
-
-### Run combinations sequentially
-
-The wrapper defaults to `fast_lio`, `lio_livox`, and `lego_loam`. Pass `--methods` explicitly when including `loam_livox`; do not include `liorf` until it is calibrated.
-
-```bash
-python3 scripts/run_full_benchmark.py \
-    --trials 50 \
-    --methods fast_lio lio_livox lego_loam loam_livox \
-    --samplers tpe cmaes gp \
-    --dataset forest01_square
-```
-
-### Run one method without Optuna
-
-```bash
-python3 scripts/run_method.py \
-    --package loam_livox \
-    --launch livox.launch \
-    --bag datasets/forest01_square.bag \
-    --odom_topic /aft_mapped_to_init \
-    --output_tum results/manual_loam_livox.tum
-```
-
-This command starts the ROS master, launches the SLAM node, records the selected odometry topic, replays the bag with simulated time, and writes a TUM trajectory.
-
-### Convert and evaluate trajectories
-
-`bag_to_tum.py` uses Python 2 for compatibility with the ROS bag stack in Melodic; the optimization and reporting scripts use Python 3.
-
-```bash
-python2 scripts/bag_to_tum.py \
-    --bag /path/to/odometry.bag \
-    --topic /Odometry \
-    --out results/odometry.tum \
-    --offset 0
-```
-
-```bash
-python3 scripts/evaluate.py \
-    datasets/ground_truth/gt_forest01_square.tum \
-    results/odometry.tum \
-    --offset dynamic \
-    --plot results/ape.png
-```
-
-The evaluator supports numeric offsets, `dynamic`, and `none`. Offsets are dataset- and method-dependent and must be recalibrated if the bags or timestamps change.
-
-## Analysis and reports
-
-After one or more studies have completed, the included scripts can generate summaries and figures:
-
-```bash
-python3 scripts/report_best_trials.py \
-    --results-dir results \
-    --dataset forest01_square \
-    --top-n 5 \
-    --csv-out results/best_trials.csv
-```
-
-```bash
-python3 scripts/plot_convergencia.py \
-    --method loam_livox \
-    --sensor performance_realtime \
-    --dataset forest01_square \
-    --results-dir results \
-    --out results/convergence.png
-```
-
-```bash
-python3 scripts/plot_fanova.py \
-    --method loam_livox \
-    --sensor performance_realtime \
-    --dataset forest01_square \
-    --sampler tpe \
-    --results-dir results
-```
-
-To compare resource usage between the baseline and best trial:
-
-```bash
-python3 scripts/measure_cost.py \
-    --method loam_livox \
-    --sensor performance_realtime \
-    --dataset forest01_square \
-    --sampler tpe \
-    --results-dir results
-
-python3 scripts/plot_custo_baseline_vs_best.py \
-    --method loam_livox \
-    --sensor performance_realtime \
-    --dataset forest01_square \
-    --sampler tpe \
-    --results-dir results
-```
-
-<!-- MEDIA PLACEHOLDER 2
-Put the article figure at: assets/results-convergence-forest01.png
-Recommended image: the complete Figure 4 convergence grid, showing TPE, GP, and CMA-ES across the evaluated methods and datasets.
-This is the strongest README image because it connects the repository directly to the Optuna contribution described in the article.
-If the convergence grid is too small, use a high-resolution crop of one method/dataset panel or use the fANOVA importance plot as a secondary figure.
-When the file is available, replace this comment with:
-<p align="center">
-    <img src="assets/results-convergence-forest01.png" alt="Optuna convergence results for the forest benchmark" width="900">
-</p>
--->
-
-## Output structure
-
-```text
-results/
-├── <method>/<config>/<dataset>/
-│   ├── study_<sampler>.db
-│   ├── study_<sampler>.csv
-│   └── <sampler>/trial_0000/
-│       ├── config_used.yaml    # Runtime-YAML methods
-│       ├── utility_used.h      # LeGO-LOAM
-│       ├── odom.tum
-│       ├── ape_stats.json
-│       └── baseline_ape.png    # Record-setting trials only
-├── _logs/                      # Per-combination logs and summary.json
-└── fanova/<dataset>/           # HTML fANOVA reports
-```
-
-Invalid infrastructure, evaluation, or insufficient-pose trials receive the finite penalty `999.0`; this is required by the GP sampler and is not a measured RMSE. `psutil` is optional, but resource metrics are zero when it is unavailable.
-
-## Current evidence
-
-The checked-in `results/` directory contains selected studies and analysis artifacts, not a guaranteed complete matrix of every method, sampler, and dataset. Treat generated result files as the source of truth for a particular run, and record the dataset version, registry revision, sampler, trial count, and hardware when reporting results.
-
-The repository supports the analysis used in the accompanying article template: baseline-versus-best RMSE, convergence curves, fANOVA parameter importance, execution time, peak memory, and average CPU utilization.
-
-## Reproducibility notes
-
-- Keep the ROS bag, ground-truth timestamps, sensor topics, and registry offsets consistent.
-- `lego_loam` recompiles with `catkin_make --pkg lego_loam` for every trial.
-- Existing SQLite studies are resumed because `load_if_exists=True`.
-- The vendored SLAM implementations retain their upstream licenses and attribution requirements.
-- Pin the container image and Python package versions for publication-grade reruns.
+- **LOAM-Livox**: publishes odometry using wall-clock time (`ros::Time::now()`) rather than bag time, so `time_offset` must be computed dynamically on every run (set `time_offset: "dynamic"` in the registry) rather than fixed.
+- **LeGO-LOAM**: hyperparameters are hardcoded in a C++ header and require a full `catkin_make --pkg lego_loam` recompilation on every trial — significantly slower than YAML-based methods.
+- Docker Desktop / WSL2 environments have shown intermittent slowdowns (`roscore` failing to start in time) after long unattended runs; `run_method.py` includes automatic cleanup and a `SIGINT → SIGTERM → SIGKILL` shutdown escalation to mitigate this, along with retry logic in `optuna_optimize.py` for transient failures.
+- `float('inf')` must never be returned as an Optuna trial value — it breaks the Gaussian Process sampler. Invalid trials are penalized with a large finite constant (`PENALIDADE_TRIAL_INVALIDO = 999.0`) instead.
 
 ## Citation
 
-If this benchmark contributes to your work, cite the associated manuscript and the upstream SLAM, dataset, Optuna, and `evo` projects. Add the final publication metadata here when available.
+If you use this benchmark in your research, please cite the accompanying paper (details to be added upon publication).
 
 ## License
 
-This repository is intended for academic use. The bundled SLAM implementations and third-party dependencies are distributed under their respective upstream licenses; consult each project before redistribution.
-
-## Author
-
-**Lucas Froes Belinassi**<br>
-Department of Computer Science, Federal University of Sao Carlos, Brazil
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

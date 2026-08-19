@@ -140,7 +140,7 @@ def main():
 
     try:
         #Inicia o algoritmo de SLAM
-        slam_cmd = f"roslaunch {args.package} {args.launch} rviz:=false"
+        slam_cmd = f"roslaunch {args.package} {args.launch} rviz:=true"
         slam_p = run_cmd(slam_cmd, bg=True)
         time.sleep(3)  # Aguarda os nós do SLAM inicializarem
 

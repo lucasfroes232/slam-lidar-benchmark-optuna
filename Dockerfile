@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-pip \
     python3-dev \
     libpcl-dev \
-    libgeographiclib-dev \
+    libgeographic-dev \
     ros-melodic-pcl-ros \
     ros-melodic-pcl-conversions \
     ros-melodic-velodyne \

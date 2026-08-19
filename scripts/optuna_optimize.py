@@ -89,15 +89,14 @@ def objective(trial, method_name, config, dataset_bag, gt_tum, sampler_name):
     study = trial.study
     root_dir = get_project_root()
 
-    # 1. Preparar pastas do Trial separadas por motor (sampler) e por dataset
+    # Preparar pastas do Trial separadas por motor (sampler) e por dataset
     config_name = os.path.splitext(os.path.basename(config['config_master']))[0]
     dataset_name = os.path.splitext(os.path.basename(dataset_bag))[0]
     trial_dir = os.path.join(root_dir, "results", method_name, config_name, dataset_name,
                               sampler_name, f"trial_{trial.number:04d}")
     os.makedirs(trial_dir, exist_ok=True)
 
-    # 2. Sugerir Parâmetros (força tipos nativos do Python, evitando numpy.int64/float64
-    #    contaminarem o yaml.dump -- causava erro de parsing no ROS)
+    # Sugerir Parâmetros 
     suggested_params = {}
     for param in config['tunable_params']:
         base_val = config['baseline'][param]
@@ -107,7 +106,7 @@ def objective(trial, method_name, config, dataset_bag, gt_tum, sampler_name):
         elif isinstance(base_val, float):
             suggested_params[param] = float(trial.suggest_float(param, lo, hi))
 
-    # 3. Injetar Parâmetros
+    # Injetar Parâmetros
     master_path = resolve_path(config['config_master'], root_dir)
     target_path = resolve_path(config['config_target'], root_dir)
 
@@ -120,7 +119,7 @@ def objective(trial, method_name, config, dataset_bag, gt_tum, sampler_name):
         recompile_workspace(config['package'])
         shutil.copy(target_path, os.path.join(trial_dir, "utility_used.h"))
 
-   # 4. Executar o SLAM (com retry automático em caso de falha de infraestrutura ROS)
+   # Executar o SLAM (com retry automático em caso de falha de infraestrutura ROS)
     odom_out = os.path.join(trial_dir, "odom.tum")
     run_cmd = (
         f"python3 {os.path.join(root_dir, 'scripts', 'run_method.py')} "
@@ -150,7 +149,7 @@ def objective(trial, method_name, config, dataset_bag, gt_tum, sampler_name):
                 print("*** Esgotadas as tentativas. Penalizando o trial. ***")
                 return PENALIDADE_TRIAL_INVALIDO
 
-    # 5. Avaliar o resultado gerando a imagem temporariamente
+    # Avaliar o resultado gerando a imagem temporariamente
     plot_out = os.path.join(trial_dir, "baseline_ape.png")
     eval_cmd = (
         f"python3 {os.path.join(root_dir, 'scripts', 'evaluate.py')} "
@@ -167,7 +166,7 @@ def objective(trial, method_name, config, dataset_bag, gt_tum, sampler_name):
         print(f"*** Trial falhou na avaliação (evaluate.py): {e.stderr} ***")
         return PENALIDADE_TRIAL_INVALIDO  # penaliza o trial, mas não derruba o estudo
 
-    # 6. Extrair estatísticas
+    # Extrair estatísticas
     stats_str = result.stdout[result.stdout.find('{'):]
     stats = json.loads(stats_str)
     rmse = stats['rmse']
@@ -182,7 +181,7 @@ def objective(trial, method_name, config, dataset_bag, gt_tum, sampler_name):
             os.remove(plot_out)
         return PENALIDADE_TRIAL_INVALIDO
 
-    # 7. Lógica de preservação de disco: Deleta a imagem se não for um recorde
+    #Lógica de preservação de disco: Deleta a imagem se não for um recorde
     try:
         best_rmse_so_far = study.best_value
     except ValueError:
