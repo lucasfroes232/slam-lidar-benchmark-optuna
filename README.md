@@ -8,7 +8,7 @@
 A benchmarking pipeline for comparing LiDAR(-inertial) SLAM methods in forest environments, with automated hyperparameter optimization via [Optuna](https://optuna.org/). Built on ROS1 Melodic, running inside Docker.
 
 <p align="center">
-  <img src="docs/images/video.gif" width="400" alt="Live trajectory estimation">
+  <img src="docs/images/video.gif" width="30%" alt="Live trajectory estimation">
   <br>
   <em>Real-time trajectory estimation running on a forest dataset.</em>
 </p>
@@ -16,7 +16,7 @@ A benchmarking pipeline for comparing LiDAR(-inertial) SLAM methods in forest en
 Evaluations were performed on the TIERS LiDAR dataset, a challenging scenario with dense canopy and a lack of regular geometric structures.
 
 <p align="center">
-  <img src="docs/images/dataset.png" width="400" alt="Forest environment and trajectory">
+  <img src="docs/images/dataset.png" width="30%" alt="Forest environment and trajectory">
   <br>
   <em>Dense canopy and robot trajectory from the <a href="https://github.com/tiers/tiers-lidars-dataset">TIERS LiDAR dataset</a>.</em>
 </p>
@@ -24,7 +24,7 @@ Evaluations were performed on the TIERS LiDAR dataset, a challenging scenario wi
 Results of the Optuna hyperparameter tuning, demonstrating the accuracy/robustness trade-off across different SLAM architectures.
 
 <p align="center">
-  <img src="docs/images/barras_rmse.png" width="300" alt="RMSE reduction after optimization">
+  <img src="docs/images/barras_rmse.png" width="20%%" alt="RMSE reduction after optimization">
   <br>
   <em>Baseline vs. best-trial RMSE on TIERS-FOREST02. LOAM-Livox shows a significant 56.4% reduction, while tightly-coupled methods show marginal gains.</em>
 </p>
