@@ -8,7 +8,7 @@
 A benchmarking pipeline for comparing LiDAR(-inertial) SLAM methods in forest environments, with automated hyperparameter optimization via [Optuna](https://optuna.org/). Built on ROS1 Melodic, running inside Docker.
 
 <p align="center">
-  <img src="docs/images/video.gif" width="60%" alt="Live trajectory estimation">
+  <img src="docs/images/video.gif" width="50%" alt="Live trajectory estimation">
   <br>
   <em>Real-time trajectory estimation running on a forest dataset.</em>
 </p>
