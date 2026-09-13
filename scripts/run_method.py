@@ -202,8 +202,7 @@ def main():
             except Exception:
                 pass
         time.sleep(1)
-
-        # garante que nada de ROS fica pendurado
+        
         cleanup_ros_processes()
 
     # bag gravado para TUM
