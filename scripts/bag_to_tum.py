@@ -4,7 +4,7 @@ import rosbag
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('--bag', required=True)
+    #p.add_argument('--bag', required=True)
     p.add_argument('--topic', required=True)
     p.add_argument('--out', required=True)
     p.add_argument('--offset', type=float, default=0.0,
